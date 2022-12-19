@@ -1,16 +1,19 @@
 name: Node CI
 
-on: [push]
+on: workflow_dispatch
 
 jobs:
-  build_and_test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
+        
       - name: Cache node modules
         id: cache-npm
-        uses: actions/cache@v3
+        uses: actions/cache@v2
         env:
           cache-name: cache-node-modules
         with:
@@ -21,13 +24,14 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-
-      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+      
       - name: Install dependencies
+        if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
         run: npm install
 
-      - name: Build 
-        run: npm build --if-present
+      - name: Build
+        run:  npm run build --if-present
+        
       - name: creating temporary files
         run: |
           mkdir dist
